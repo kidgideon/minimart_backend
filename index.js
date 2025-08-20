@@ -9,7 +9,7 @@ const app = express();
 // Restrict CORS in production
 app.use(cors({
   origin: process.env.NODE_ENV === "production"
-    ? ["https://yourfrontend.com"] // ✅ replace with your actual frontend domain
+    ? ["https://minimart.ng"] 
     : "*",
 }));
 app.use(express.json());
