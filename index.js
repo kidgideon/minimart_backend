@@ -1,7 +1,11 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+
+// Import your route modules
 import paystackRoutes from "./routes/paystack.js";
+import storeRoutes from "./routes/store.js";
+import productRoutes from "./routes/products.js";
 
 dotenv.config();
 const app = express();
@@ -10,8 +14,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// API routes
 app.use("/api/paystack", paystackRoutes);
 
-// For Vercel serverless export the handler
+// Storefront meta routes
+app.use("/", storeRoutes);              // handles "/"
+app.use("/Product", productRoutes);    // handles "/Products/:id"
+
+// For Vercel serverless
 export default app;
