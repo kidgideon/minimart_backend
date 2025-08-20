@@ -5,7 +5,7 @@ const router = express.Router();
 
 function isAgent(req) {
   const ua = (req.headers["user-agent"] || "").toLowerCase();
-  return /bot|crawl|spider|slurp|facebookexternalhit|twitterbot|linkedinbot/i.test(ua);
+ return /bot|crawl|spider|slurp|facebookexternalhit|twitterbot|linkedinbot|whatsapp/i.test(ua);
 }
 
 router.get("/", async (req, res) => {
