@@ -6,12 +6,8 @@ import paystackRoutes from "./routes/paystack.js";
 dotenv.config();
 const app = express();
 
-// Restrict CORS in production
-app.use(cors({
-  origin: process.env.NODE_ENV === "production"
-    ? ["https://minimart.ng"] 
-    : "*",
-}));
+// Allow all domains
+app.use(cors());
 app.use(express.json());
 
 // Routes
