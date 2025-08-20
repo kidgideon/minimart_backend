@@ -33,9 +33,9 @@ router.get("/:id", async (req, res) => {
     if (!bizDoc.exists) return res.status(404).send("Business not found");
     const biz = bizDoc.data();
 
-    const product =
-      (biz.prod && biz.prod.find((p) => p.prodId === productId)) ||
-      (biz.svc && biz.svc.find((s) => s.serviceId === productId));
+ const product =
+  (biz.products && biz.products.find((p) => p.prodId === productId)) ||
+  (biz.services && biz.services.find((s) => s.serviceId === productId));
 
     if (!product) return res.status(404).send("Product not found");
 

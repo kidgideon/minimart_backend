@@ -44,7 +44,7 @@ router.get("/", async (req, res) => {
             <meta name="description" content="${biz.description || "Welcome to this store"}" />
             <meta property="og:title" content="${biz.businessName}" />
             <meta property="og:description" content="${biz.description || ""}" />
-            <meta property="og:image" content="${biz.logo || "https://minimart.ng/default-store.png"}" />
+            <meta property="og:image" content="${biz.customTheme.logo || "https://minimart.ng/default-store.png"}" />
             <meta property="og:url" content="https://${host}" />
           </head>
           <body>
