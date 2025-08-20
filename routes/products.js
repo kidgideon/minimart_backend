@@ -3,6 +3,11 @@ import db from "../firebase.js";
 
 const router = express.Router();
 
+function isAgent(req) {
+  const ua = (req.headers["user-agent"] || "").toLowerCase();
+  return /bot|crawl|spider|slurp|facebookexternalhit|twitterbot|linkedinbot/i.test(ua);
+}
+
 router.get("/:id", async (req, res) => {
   try {
     const host = req.hostname;
@@ -34,24 +39,30 @@ router.get("/:id", async (req, res) => {
 
     if (!product) return res.status(404).send("Product not found");
 
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8" />
-          <title>${product.name} | ${biz.businessName}</title>
-          <meta name="description" content="${product.description || "Check out this product"}" />
-          <meta property="og:title" content="${product.name}" />
-          <meta property="og:description" content="${product.description || ""}" />
-          <meta property="og:image" content="${product.images?.[0] || "https://minimart.ng/default-product.png"}" />
-          <meta property="og:url" content="https://${host}/Products/${productId}" />
-        </head>
-        <body>
-          <div id="root"></div>
-          <script src="/index.js"></script>
-        </body>
-      </html>
-    `);
+    if (isAgent(req)) {
+      // Bot: send SEO meta HTML
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <title>${product.name} | ${biz.businessName}</title>
+            <meta name="description" content="${product.description || "Check out this product"}" />
+            <meta property="og:title" content="${product.name}" />
+            <meta property="og:description" content="${product.description || ""}" />
+            <meta property="og:image" content="${product.images?.[0] || "https://minimart.ng/default-product.png"}" />
+            <meta property="og:url" content="https://${host}/Products/${productId}" />
+          </head>
+          <body>
+            <div id="root"></div>
+          </body>
+        </html>
+      `);
+    }
+
+    // Human: let SPA handle it
+    return res.sendFile("index.html", { root: "./public" });
+
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
