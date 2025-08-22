@@ -19,7 +19,7 @@ app.use("/api/paystack", paystackRoutes);
 
 // Storefront meta routes
 app.use("/", storeRoutes);              // handles "/"
-app.use("/Product", productRoutes);    // handles "/Products/:id"
+app.use("/product", productRoutes);    // handles "/Products/:id"
 
 // For Vercel serverless
 export default app;
