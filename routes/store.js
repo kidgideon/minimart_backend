@@ -9,20 +9,22 @@ router.get("/", async (req, res) => {
 
   try {
     const docSnap = await db.collection("businesses").doc(storeId).get();
-    if (!docSnap.exists) return res.status(404).json({ error: "Store not found" });
+    if (!docSnap.exists) {
+      return res.status(404).json({ error: "Store not found" });
+    }
 
-    const biz = docSnap.data();
-    const primaryColor = biz.customTheme?.primaryColor || "#1C2230";
-    const secondaryColor = biz.customTheme?.secondaryColor || "#43B5F4";
+    const biz = docSnap.data() || {};
+    const customTheme = biz.customTheme || {};
+    const otherInfo = biz.otherInfo || {};
 
     return res.json({
       storeId,
       biz: {
-        businessName: biz.businessName,
-        description: biz.description,
-        logo: biz.customTheme?.logo,
-        primaryColor,
-        secondaryColor,
+        businessName: biz.businessName || "",
+        description: otherInfo.description || "",
+        logo: customTheme.logo || "",
+        primaryColor: customTheme.primaryColor || "#1C2230",
+        secondaryColor: customTheme.secondaryColor || "#43B5F4",
       },
     });
   } catch (err) {
