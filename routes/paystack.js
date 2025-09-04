@@ -47,23 +47,22 @@ router.post("/subaccount", async (req, res) => {
     return res.status(400).json({ status: false, message: "Missing parameters" });
   }
   try {
-    const resp = await axios.post(
-      "https://api.paystack.co/subaccount",
-      {
-        business_name: businessName,
-        account_number: accNo,
-        bank_code: bankCode,
-        percentage_charge: 1,
-        settlement_bank: bankCode,
-        account_name: accName,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${getSecretKey()}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+   const resp = await axios.post(
+  "https://api.paystack.co/subaccount",
+  {
+    business_name: businessName,
+    settlement_bank: bankCode,
+    account_number: accNo,
+    percentage_charge: 2
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${getSecretKey()}`,
+      "Content-Type": "application/json",
+    },
+  }
+);
+
     res.json(resp.data);
   } catch (err) {
     console.error("Subaccount error:", err.response?.data || err.message);
