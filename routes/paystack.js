@@ -70,30 +70,33 @@ router.post("/subaccount", async (req, res) => {
   }
 });
 
-// ✅ Initialize payment
+// ✅ Initialize payment with split code
 router.post("/pay", async (req, res) => {
-  const { email, amount, subaccount_code, reference, callback_url } = req.body;
+  const { email, amount, split_code, reference, callback_url } = req.body;
+
   if (!email || !amount || !reference) {
     return res.status(400).json({ status: false, message: "Missing parameters" });
   }
+
   try {
-   const resp = await axios.post(
-  "https://api.paystack.co/transaction/initialize",
-  {
-    email,
-    amount,
-    reference,
-    callback_url,
-    subaccount: subaccount_code,
-    bearer: "subaccount", // <-- ADD THIS
-  },
-  {
-    headers: {
-      Authorization: `Bearer ${getSecretKey()}`,
-      "Content-Type": "application/json",
-    },
-  }
-);
+    const payload = {
+      email,
+      amount,
+      reference,
+      callback_url,
+      split_code, // <-- use this instead of subaccount
+    };
+
+    const resp = await axios.post(
+      "https://api.paystack.co/transaction/initialize",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${getSecretKey()}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     res.json(resp.data);
   } catch (err) {
@@ -101,6 +104,7 @@ router.post("/pay", async (req, res) => {
     res.status(500).json({ status: false, message: "Error initializing payment" });
   }
 });
+
 
 // ✅ Verify payment
 router.get("/verify/:reference", async (req, res) => {
@@ -116,5 +120,66 @@ router.get("/verify/:reference", async (req, res) => {
     res.status(500).json({ status: false, message: "Error verifying payment" });
   }
 });
+
+
+//  * POST /create-split
+//  * Body: {
+//  *   subaccount_code: string, // e.g. "ACCT_xxx"
+//  *   vendorShare: number,      // integer percent vendor should get (0–100)
+//  *   splitName?: string        // optional descriptive name
+//  * }
+//  *
+//  * Returns: { split_code } on success.
+//  */
+
+
+router.post("/create-split", async (req, res) => {
+  const { subaccount_code, vendorShare, splitName } = req.body;
+  
+  // Basic validation
+  if (!subaccount_code || typeof vendorShare !== "number") {
+    return res.status(400).json({ status: false, message: "Missing subaccount_code or vendorShare" });
+  }
+  if (vendorShare < 0 || vendorShare > 100) {
+    return res.status(400).json({ status: false, message: "vendorShare must be between 0 and 100" });
+  }
+
+  try {
+    const payload = {
+      name: splitName || `Split for ${subaccount_code}`,
+      type: "percentage",
+      currency: "NGN",
+      subaccounts: [
+        {
+          subaccount: subaccount_code,
+          share: vendorShare,
+        }
+      ],
+      bearer_type: "subaccount" 
+    };
+
+    const resp = await axios.post(`https://api.paystack.co/split`, payload, {
+      headers: {
+        Authorization: `Bearer ${getSecretKey()}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const splitData = resp.data?.data;
+    if (!splitData || !splitData.split_code) {
+      return res.status(500).json({ status: false, message: "No split_code returned", detail: resp.data });
+    }
+
+    return res.json({ status: true, split_code: splitData.split_code });
+  } catch (err) {
+    console.error("Error creating split:", err.response?.data || err.message);
+    return res.status(500).json({
+      status: false,
+      message: "Error creating transaction split",
+      detail: err.response?.data,
+    });
+  }
+});
+
 
 export default router;
