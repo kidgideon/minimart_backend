@@ -78,16 +78,24 @@ router.post("/pay", async (req, res) => {
     return res.status(400).json({ status: false, message: "Missing parameters" });
   }
   try {
-    const resp = await axios.post(
-      "https://api.paystack.co/transaction/initialize",
-      { email, amount, reference, callback_url, subaccount: subaccount_code },
-      {
-        headers: {
-          Authorization: `Bearer ${getSecretKey()}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+   const resp = await axios.post(
+  "https://api.paystack.co/transaction/initialize",
+  {
+    email,
+    amount,
+    reference,
+    callback_url,
+    subaccount: subaccount_code,
+    bearer: "subaccount", // <-- ADD THIS
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${getSecretKey()}`,
+      "Content-Type": "application/json",
+    },
+  }
+);
+
     res.json(resp.data);
   } catch (err) {
     console.error("Payment init error:", err.response?.data || err.message);
