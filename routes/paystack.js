@@ -69,7 +69,6 @@ router.post("/subaccount", async (req, res) => {
     res.status(500).json({ status: false, message: "Error creating subaccount" });
   }
 });
-
 // ✅ Initialize payment with split code
 router.post("/pay", async (req, res) => {
   const { email, amount, split_code, reference, callback_url } = req.body;
@@ -100,11 +99,13 @@ router.post("/pay", async (req, res) => {
 
     res.json(resp.data);
   } catch (err) {
-    console.error("Payment init error:", err.response?.data || err.message);
-    res.status(500).json({ status: false, message: "Error initializing payment" });
+    res.status(500).json({
+      status: false,
+      message: "Error initializing payment",
+      detail: err.response?.data || err.message,
+    });
   }
 });
-
 
 // ✅ Verify payment
 router.get("/verify/:reference", async (req, res) => {
