@@ -132,7 +132,6 @@ router.get("/verify/:reference", async (req, res) => {
 //  * Returns: { split_code } on success.
 //  */
 
-
 router.post("/create-split", async (req, res) => {
   const { subaccount_code, vendorShare, splitName } = req.body;
   
@@ -140,6 +139,7 @@ router.post("/create-split", async (req, res) => {
   if (!subaccount_code || typeof vendorShare !== "number") {
     return res.status(400).json({ status: false, message: "Missing subaccount_code or vendorShare" });
   }
+
   if (vendorShare < 0 || vendorShare > 100) {
     return res.status(400).json({ status: false, message: "vendorShare must be between 0 and 100" });
   }
@@ -152,13 +152,14 @@ router.post("/create-split", async (req, res) => {
       subaccounts: [
         {
           subaccount: subaccount_code,
-          share: vendorShare,
+          share: vendorShare
         }
       ],
-      bearer_type: "subaccount" 
+      bearer_type: "subaccount", // Who bears the Paystack fees
+      bearer_subaccount: subaccount_code // Which subaccount specifically bears it
     };
 
-    const resp = await axios.post(`https://api.paystack.co/split`, payload, {
+    const resp = await axios.post("https://api.paystack.co/split", payload, {
       headers: {
         Authorization: `Bearer ${getSecretKey()}`,
         "Content-Type": "application/json",
@@ -167,7 +168,11 @@ router.post("/create-split", async (req, res) => {
 
     const splitData = resp.data?.data;
     if (!splitData || !splitData.split_code) {
-      return res.status(500).json({ status: false, message: "No split_code returned", detail: resp.data });
+      return res.status(500).json({
+        status: false,
+        message: "No split_code returned",
+        detail: resp.data
+      });
     }
 
     return res.json({ status: true, split_code: splitData.split_code });
@@ -180,6 +185,5 @@ router.post("/create-split", async (req, res) => {
     });
   }
 });
-
 
 export default router;
